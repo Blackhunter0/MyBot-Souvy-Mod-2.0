@@ -796,6 +796,7 @@ Global $g_bChkExtraChinese = False ; extra Chinese alphabets
 Global $g_bChkExtraKorean = False ; extra Korean alphabets
 Global $g_bChkExtraPersian = False ; extra Persian alphabets
 Global $g_sTxtGeneralBlacklist = ""
+Global $g_bChkClanHop = False
 
 ; <><><><> Village / Donate - Schedule <><><><>
 Global $g_bDonateHoursEnable = False
@@ -1614,3 +1615,27 @@ $g_oBldgImages.add($eBldgAirDefense & "_" & "0", @ScriptDir & "\imgxml\Buildings
 ; EOF
 ; Demen MOD - Demen_GE_#9000
 #include "MOD_Demen\Globals_Demen.au3"
+;CSV Deployment Speed Mod
+Global $isldSelectedCSVSpeed[$g_iModeCount], $iCSVSpeeds[21]
+$isldSelectedCSVSpeed[$DB] = 3
+$isldSelectedCSVSpeed[$LB] = 3
+$iCSVSpeeds[0] = .25
+$iCSVSpeeds[1] = .5
+$iCSVSpeeds[2] = .75
+$iCSVSpeeds[3] = 1
+$iCSVSpeeds[4] = 1.25
+$iCSVSpeeds[5] = 1.5
+$iCSVSpeeds[6] = 1.75
+$iCSVSpeeds[8] = 2
+$iCSVSpeeds[9] = 2.25
+$iCSVSpeeds[10] = 2.5
+$iCSVSpeeds[11] = 2.75
+$iCSVSpeeds[12] = 3
+$iCSVSpeeds[13] = 3.5
+$iCSVSpeeds[14] = 4
+$iCSVSpeeds[15] = 5
+$iCSVSpeeds[16] = 6
+$iCSVSpeeds[17] = 7
+$iCSVSpeeds[18] = 8
+$iCSVSpeeds[19] = 9
+$iCSVSpeeds[20] = 99

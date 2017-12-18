@@ -51,6 +51,7 @@ Global $g_hLblDonateTroopTBD1 = 0, $g_hLblDonateTroopTBD2 = 0, $g_hLblDonateTroo
 	   $g_hLblDonateTroopCustomI = 0, $g_hLblDonateTroopCustomJ = 0, $g_hLblDonateSpellTBD1 = 0
 
 Global $g_hGrpDonateGeneralBlacklist = 0, $g_hTxtGeneralBlacklist = 0
+Global $g_hGrpDonateOptions = 0, $g_hChkClanHop = 0
 Global $lblBtnCustomE = 0
 
 ; Schedule
@@ -617,13 +618,14 @@ Func CreateDonateSubTab()
 			GUICtrlSetState(-1, $GUI_DISABLE)
 
 		GUICtrlCreateButton("", $x + 2, $y, $Offx - 2, $Offx - 2, $BS_ICON)
-			GUICtrlSetState(-1, $GUI_DISABLE)
-;~			_GUICtrlSetImage(-1, $g_sLibIconPath, $eIcnTroops, 0)
-;~			GUICtrlSetOnEvent(-1, "btnDonateCustomD")
-	$x += $Offx
-		GUICtrlCreateButton("", $x + 2, $y, $Offx - 2, $Offx - 2, $BS_ICON)
 			_GUICtrlSetImage(-1, $g_sLibIconPath, $eIcnDonBlacklist, 1)
 			GUICtrlSetOnEvent(-1, "btnDonateBlacklist")
+
+    ;ClanHop button by Souvy
+    $x += $Offx
+	   GUICtrlCreateButton("", $x + 2, $y, $Offx - 2, $Offx - 2, $BS_ICON)
+		   GUICtrlSetImage (-1, $g_sLibIconPath, $eIcnCCDonate, 1)
+		   GUICtrlSetOnEvent(-1, "btnDonateOptions")
 
 	Local $Offy = $yStart + 185
 	$x = $xStart
@@ -1821,6 +1823,15 @@ Func CreateDonateSubTab()
 			GUICtrlSetColor(-1, $COLOR_WHITE)
 			GUICtrlSetData(-1, StringFormat(GetTranslatedFileIni("MBR GUI Design Child Village - Donate", "TxtGeneralBlacklist_Item_01", "clan war\r\nwar\r\ncw")))
 			_GUICtrlSetTip(-1, GetTranslatedFileIni("MBR GUI Design Child Village - Donate", "TxtGeneralBlacklist_Info_01", "General Blacklist for donation requests"))
+	$x = $xStart
+    $y = $Offy
+			$g_hGrpDonateOptions = GUICtrlCreateGroup("Donate Options", $x - 20, $y - 20, $g_iSizeWGrpTab3, 169)
+    $x -= 10
+    $y -= 4
+	        GUICtrlSetState(-1, $GUI_HIDE)
+			$g_hChkClanHop = GUICtrlCreateCheckbox("Clan Hop", $x, $y)
+			GUICtrlSetState(-1,$GUI_HIDE)
+
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 EndFunc   ;==>CreateDonateSubTab

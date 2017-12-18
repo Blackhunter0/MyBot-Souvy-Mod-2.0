@@ -446,6 +446,8 @@ Func ApplyConfig_600_12($TypeReadSave)
 
 			GUICtrlSetData($g_hTxtGeneralBlacklist, $g_sTxtGeneralBlacklist)
 
+			GUICtrlSetState($g_hChkClanHop, $g_bChkClanHop ? $GUI_CHECKED : $GUI_UNCHECKED)
+
 		Case "Save"
 			$g_bChkDonate = (GUICtrlRead($g_hChkDonate) = $GUI_CHECKED)
 			For $i = 0 To $eTroopCount - 1 + $g_iCustomDonateConfigs
@@ -481,6 +483,7 @@ Func ApplyConfig_600_12($TypeReadSave)
 			$g_bChkExtraPersian = (GUICtrlRead($g_hChkExtraPersian) = $GUI_CHECKED)
 
 			$g_sTxtGeneralBlacklist = GUICtrlRead($g_hTxtGeneralBlacklist)
+			$g_bChkClanHop = (GUICtrlRead($g_hChkClanHop) = $GUI_CHECKED)
 	EndSwitch
 EndFunc   ;==>ApplyConfig_600_12
 
@@ -1330,7 +1333,13 @@ Func ApplyConfig_600_29_DB_Scripted($TypeReadSave)
 			EndIf
 			_GUICtrlComboBox_SetCurSel($g_hCmbScriptNameDB, $tempindex)
 			cmbScriptNameDB()
-			cmbScriptRedlineImplDB()
+			; CSV Deployment Speed Mod
+	         GUICtrlSetData($sldSelectedSpeedDB, $isldSelectedCSVSpeed[$DB])
+			 GUICtrlSetData($sldSelectedSpeedAB, $isldSelectedCSVSpeed[$LB])
+
+			 sldSelectedSpeedDB()
+	         sldSelectedSpeedAB()
+			 cmbScriptRedlineImplDB()
 		Case "Save"
 			$g_aiAttackScrRedlineRoutine[$DB] = _GUICtrlComboBox_GetCurSel($g_hCmbScriptRedlineImplDB)
 			$g_aiAttackScrDroplineEdge[$DB] = _GUICtrlComboBox_GetCurSel($g_hCmbScriptDroplineDB)
