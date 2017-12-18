@@ -47,7 +47,7 @@ Func _VillageSearch() ;Control for searching a village that meets conditions
 			$g_iAimGoldPlusElixir[$i] = $g_aiFilterMinGoldPlusElixir[$i]
 			$g_iAimDark[$i] = ($g_abFilterMeetDEEnable[$i] ? ($g_aiFilterMeetDEMin[$i]) : (0))
 			$g_iAimTrophy[$i] = ($g_abFilterMeetTrophyEnable[$i] ? ($g_aiFilterMeetTrophyMin[$i]) : (0))
-			$g_iAimTrophyMax[$i] = ($g_abFilterMeetTrophyEnable[$i] ? ($g_aiFilterMeetTrophyMax[$i]) : (99))
+            $g_iAimTrophyMax[$i] = ($g_abFilterMeetTrophyEnable[$i] ? ($g_aiFilterMeetTrophyMax[$i]) : (99))
 		Next
 	EndIf
 
@@ -389,6 +389,12 @@ Func _VillageSearch() ;Control for searching a village that meets conditions
 			$g_iSearchCost += $g_aiSearchCost[$g_iTownHallLevel - 1]
 			$g_iStatsTotalGain[$eLootGold] -= $g_aiSearchCost[$g_iTownHallLevel - 1]
 		EndIf
+
+		If $g_bChkSwitchAcc Then ; SwitchAcc - Demen_SA_#9001
+			$g_aiSkippedVillageCountAcc[$g_iCurAccount] += 1
+			If $g_iTownHallLevel <> "" And $g_iTownHallLevel > 0 Then $g_aiGoldTotalAcc[$g_iCurAccount] -= $g_aiSearchCost[$g_iTownHallLevel - 1]
+		EndIf
+
 		UpdateStats()
 
 	WEnd ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;### Main Search Loop End ###;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

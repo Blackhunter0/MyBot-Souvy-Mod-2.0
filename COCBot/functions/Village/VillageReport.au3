@@ -45,6 +45,17 @@ Func VillageReport($bBypass = False, $bSuppressLog = False)
 		$g_iGemAmount = getResourcesMainScreen(719, 123)
 		If Not $bSuppressLog Then SetLog(" [G]: " & _NumberFormat($g_aiCurrentLoot[$eLootGold]) & " [E]: " & _NumberFormat($g_aiCurrentLoot[$eLootElixir]) & " [GEM]: " & _NumberFormat($g_iGemAmount), $COLOR_SUCCESS)
 	EndIf
+
+	If $g_bChkSwitchAcc Then										; SwitchAcc - Demen_SA_#9001
+		$g_aiFreeBuilderCountAcc[$g_iCurAccount] = $g_iFreeBuilderCount
+		$g_aiTotalBuilderCountAcc[$g_iCurAccount] = $g_iTotalBuilderCount
+		$g_aiTrophyCurrentAcc[$g_iCurAccount] = $g_aiCurrentLoot[$eLootTrophy]
+		$g_aiGoldCurrentAcc[$g_iCurAccount] = $g_aiCurrentLoot[$eLootGold]
+		$g_aiElixirCurrentAcc[$g_iCurAccount] = $g_aiCurrentLoot[$eLootElixir]
+		$g_aiDarkCurrentAcc[$g_iCurAccount] = $g_aiCurrentLoot[$eLootDarkElixir]
+		$g_aiGemAmountAcc[$g_iCurAccount] = $g_iGemAmount
+    EndIf															; SwitchAcc - Demen_SA_#9001
+
 	If $bBypass = False Then ; update stats
 		UpdateStats()
 	EndIf

@@ -292,3 +292,5 @@
 #include "functions\Config\applyConfig.au3"
 #include "functions\Config\readConfig.au3"
 #include "functions\Config\saveConfig.au3"
+;Demen Mod - Demen_GE_#9000
+#include "MOD_Demen\Functions_Demen.au3"

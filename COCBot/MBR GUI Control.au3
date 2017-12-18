@@ -48,6 +48,8 @@ Global $g_hFrmBot_WNDPROC_ptr = 0
 #include "GUI\MBR GUI Control Child Misc.au3"
 #include "GUI\MBR GUI Control Android.au3"
 #include "MBR GUI Action.au3"
+; Demen Mod - Demen_GE_#9000
+#include "MOD_Demen\GUI Control_Demen.au3"
 
 Func InitializeMainGUI($bGuiModeUpdate = False)
 	InitializeControlVariables()
@@ -173,7 +175,7 @@ EndFunc   ;==>IsAlwaysEnabledControl
 ; Accelerator Key, more responsive than buttons in run-mode
 Func SetAccelerators($bDockedUnshieledFocus = False)
 	If $g_iGuiMode = 0 Then Return
-	Local $aAccelKeys[2][2] = [["{ESC}", $g_hBtnStop], ["{PAUSE}", $g_hBtnPause]]
+	Local $aAccelKeys[2][2] = [["+{ESC}", $g_hBtnStop], ["{PAUSE}", $g_hBtnPause]] ; change Stop hotkey to Shift+ESC for avoidance of accidental bot stop. ESC key is too frequently used. (Other mod's Code ref. Demen_OT_#9009)
 	Local $aAccelKeys_DockedUnshieldedFocus[3][2] = [["{ESC}", $g_hFrmBotEmbeddedShieldInput], ["{ENTER}", $g_hFrmBotEmbeddedShieldInput], ["{PAUSE}", $g_hBtnPause]] ; used in docked mode when android has focus to support ESC for android
 
 	GUISetAccelerators(0, $g_hFrmBot) ; Remove all accelerators
@@ -705,6 +707,8 @@ Func GUIControl_WM_NOTIFY($hWind, $iMsg, $wParam, $lParam)
 			tabTHSnipe()
 		Case $g_hGUI_BOT_TAB
 			tabBot()
+		Case $g_hGUI_BOT_SWITCH_TAB
+			tabBotProfile() ; Demen_SA_#9001 & Demen_FS_#9012
 		Case Else
 			$bCheckEmbeddedShield = False
 	EndSwitch
@@ -1579,6 +1583,61 @@ Func SetTime($bForceUpdate = False)
 		_TicksToTime(Int(__TimerDiff($g_hTimerSinceStarted) + $g_iTimePassed), $hour, $min, $sec)
 		GUICtrlSetData($g_hLblResultRuntimeNow, StringFormat("%02i:%02i:%02i", $hour, $min, $sec))
 	EndIf
+
+; Showing troops time in MultiStats - SwitchAcc - Demen_SA_#9001
+	Local Static $DisplayLoop = 0
+	If $DisplayLoop >= 3 Then ; Conserve Clock Cycles on Updating times
+		$DisplayLoop = 0
+		If $g_bChkSwitchAcc Then
+			If GUICtrlRead($g_hGUI_BOT_TAB, 1) = $g_hGUI_BOT_TAB_ITEM6 Then
+				For $i = 0 To $g_iTotalAcc;  Update time for all Accounts
+					; Troop Time (include spell and hero if needed)
+					If $g_abAccountNo[$i] And Not $g_abDonateOnly[$i] And $g_aiTimerStart[$i] <> 0 Then
+						Local $UpdateTrainTime = $g_aiRemainTrainTime[$i] - TimerDiff($g_aiTimerStart[$i]) / 60 / 1000 ; in minutes
+						Local $sReadyTime = ""
+						If Abs($UpdateTrainTime) >= 60 Then
+						   $sReadyTime &= Int($UpdateTrainTime/60) & "h " & Abs(Round(Mod($UpdateTrainTime,60),0)) & "m"
+						Else
+						   $sReadyTime &= Int($UpdateTrainTime) & "m " & Abs(Round(Mod($UpdateTrainTime,1) * 60, 0)) & "s"
+						EndIf
+
+						If $i = $g_iCurAccount Then
+							GUICtrlSetBkColor($g_ahLblTroopsTime[$i], $COLOR_GREEN)
+							GUICtrlSetColor($g_ahLblTroopsTime[$i], $COLOR_WHITE)
+						ElseIf $UpdateTrainTime < 0 Then
+							GUICtrlSetBkColor($g_ahLblTroopsTime[$i], $COLOR_RED)
+							GUICtrlSetColor($g_ahLblTroopsTime[$i], $COLOR_WHITE)
+						Else
+							GUICtrlSetBkColor($g_ahLblTroopsTime[$i], $COLOR_YELLOW)
+							GUICtrlSetColor($g_ahLblTroopsTime[$i], $COLOR_BLACK)
+						EndIf
+						GUICtrlSetData($g_ahLblTroopsTime[$i], $sReadyTime)
+					EndIf
+
+					; Lab time
+					If $i <> $g_iCurAccount And $g_aLabTimerStart[$i] <> 0 Then
+						Local $sLabtime = ""
+						Local $UpdateLabTime = $g_aLabTimeAcc[$i] - TimerDiff($g_aLabTimerStart[$i]) / 60 / 1000 ; in minutes
+						If $UpdateLabTime <= 0 Then
+							GUICtrlSetColor($g_ahLblLab[$i], $COLOR_GREEN)
+							GUICtrlSetColor($g_ahLblLabTime[$i], $COLOR_GREEN)
+							$sLabtime = "Ready"
+						ElseIf $UpdateLabTime >= 24 * 60 Then
+							$sLabtime = Int($UpdateLabTime/24/60) & "d " & Round(Mod($UpdateLabTime, 24*60)/60,0) & "h"
+						ElseIf $UpdateLabTime >= 60 Then
+							$sLabtime = Int($UpdateLabTime/60) & "h " & Round(Mod($UpdateLabTime,60), 0) & "m"
+						Else
+							$sLabtime = Int($UpdateLabTime) & "m " & Round(Mod($UpdateLabTime,1) * 60, 0) & "s"
+						EndIf
+						GUICtrlSetData($g_ahLblLabTime[$i], $sLabtime)
+					EndIf
+				Next
+			EndIf
+		EndIf
+	EndIf
+	$DisplayLoop += 1
+; Showing troops time in MultiStats - SwitchAcc - Demen_SA_#9001
+
 EndFunc   ;==>SetTime
 
 Func tabMain()
@@ -1831,21 +1890,42 @@ Func tabBot()
 	Select
 		Case $tabidx = 0 ; Options tab
 			GUISetState(@SW_HIDE, $g_hGUI_STATS)
+			GUISetState(@SW_HIDE, $g_hGUI_BOT_SWITCH) ; Demen_SA_#9001 & Demen_FS_#9012
 			ControlShow("", "", $g_hCmbGUILanguage)
 		Case $tabidx = 1 ; Debug tab
 			GUISetState(@SW_HIDE, $g_hGUI_STATS)
+			GUISetState(@SW_HIDE, $g_hGUI_BOT_SWITCH) ; Demen_SA_#9001 & Demen_FS_#9012
 			ControlHide("", "", $g_hCmbGUILanguage)
 		Case $tabidx = 2 ; Profiles tab
 			GUISetState(@SW_HIDE, $g_hGUI_STATS)
+			GUISetState(@SW_HIDE, $g_hGUI_BOT_SWITCH) ; Demen_SA_#9001 & Demen_FS_#9012
 			ControlHide("", "", $g_hCmbGUILanguage)
 		Case $tabidx = 3 ; Android tab
 			GUISetState(@SW_HIDE, $g_hGUI_STATS)
+			GUISetState(@SW_SHOWNOACTIVATE, $g_hGUI_BOT_SWITCH) ; Demen_SA_#9001 & Demen_FS_#9012
 			ControlHide("", "", $g_hCmbGUILanguage)
+			tabBotProfile()
 		Case $tabidx = 4 ; Stats tab
 			GUISetState(@SW_SHOWNOACTIVATE, $g_hGUI_STATS)
+			GUISetState(@SW_HIDE, $g_hGUI_BOT_SWITCH) ; Demen_SA_#9001 & Demen_FS_#9012
+			ControlHide("","",$g_hCmbGUILanguage)
+		Case $tabidx = 5 ; MultiStats tab - SwitchAcc Demen_SA_#9001
+			GUISetState(@SW_HIDE, $g_hGUI_STATS)
+			GUISetState(@SW_HIDE, $g_hGUI_BOT_SWITCH)
+			If $g_bRunState = False Then UpdateMultiStats()
 			ControlHide("", "", $g_hCmbGUILanguage)
 	EndSelect
 EndFunc   ;==>tabBot
+
+Func tabBotProfile() ; Demen_SA_#9001 & Demen_FS_#9012
+    Local $tabidx = GUICtrlRead($g_hGUI_BOT_SWITCH_TAB)
+    Select
+        Case $tabidx = 0
+            GUISetState(@SW_SHOWNOACTIVATE, $g_hGUI_LOG_SA)
+        Case Else
+            GUISetState(@SW_HIDE, $g_hGUI_LOG_SA)
+    EndSelect
+EndFunc   ;==>tabBotProfile
 
 Func tabDeadbase()
 	Local $tabidx = GUICtrlRead($g_hGUI_DEADBASE_TAB)

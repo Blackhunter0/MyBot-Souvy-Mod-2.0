@@ -33,12 +33,14 @@ Func chkRequestCCHours()
 
 	If GUICtrlRead($g_hChkRequestTroopsEnable) = $GUI_CHECKED Then
 		GUICtrlSetState($g_hTxtRequestCC, $GUI_SHOW + $GUI_ENABLE)
-		For $i = $g_hLblRequestCChour To $g_hLblRequestCCHoursPM
+		For $i = $g_hLblCastleCapacity To $g_hLblRequestCCHoursPM ; CheckCC Troops - Demen_CC_#9004
 			GUICtrlSetState($i, $GUI_ENABLE)
 		Next
 	Else
 		GUICtrlSetState($g_hTxtRequestCC, $GUI_SHOW + $GUI_DISABLE)
-		For $i = $g_hLblRequestCChour To $g_hLblRequestCCHoursPM
+		GUICtrlSetState($g_hChkTroopsCC, $GUI_UNCHECKED);CheckCC Troops - Demen_CC_#9004
+		GUIControlCheckCC();CheckCC Troops - Demen_CC_#9004
+		For $i = $g_hLblCastleCapacity To $g_hLblRequestCCHoursPM
 			GUICtrlSetState($i, $GUI_DISABLE)
 		Next
 	EndIf

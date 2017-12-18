@@ -27,7 +27,7 @@
 
 ; Enforce variable declarations
 Opt("MustDeclareVars", 1)
-
+Global $g_sModversion = "Souvy 2.0" ; <== Just Change This to Version Number
 Global $g_sBotTitle = "" ;~ Don't assign any title here, use Func UpdateBotTitle()
 Global $g_hFrmBot = 0 ; The main GUI window
 
@@ -95,6 +95,8 @@ Func InitializeBot()
 	SetupProfileFolder() ; Setup profile folders
 
 	SetLogCentered(" BOT LOG ") ; Initial text for log
+
+	SetSwitchAccLog(_PadStringCenter(" SwitchAcc Log ", 25, "="), $COLOR_BLACK, "Lucida Console", 8, False) ; Demen_SA_#9001
 
 	; Debug Output of launch parameter
 	SetDebugLog("@AutoItExe: " & @AutoItExe)
@@ -248,9 +250,9 @@ Func ProcessCommandLine()
 	; Handle Command Line Parameters
 	If $g_asCmdLine[0] > 0 Then
 		$g_sProfileCurrentName = StringRegExpReplace($g_asCmdLine[1], '[/:*?"<>|]', '_')
-		If $g_asCmdLine[0] >= 2 Then
-			If StringInStr($g_asCmdLine[2], "BlueStacks3") Then $g_asCmdLine[2] = "BlueStacks2"
-		EndIf
+        If $g_asCmdLine[0] >= 2 Then
+            If StringInStr($g_asCmdLine[2], "BlueStacks3") Then $g_asCmdLine[2] = "BlueStacks2"
+        EndIf
 	ElseIf FileExists($g_sProfilePath & "\profile.ini") Then
 		$g_sProfileCurrentName = StringRegExpReplace(IniRead($g_sProfilePath & "\profile.ini", "general", "defaultprofile", ""), '[/:*?"<>|]', '_')
 		If $g_sProfileCurrentName = "" Or Not FileExists($g_sProfilePath & "\" & $g_sProfileCurrentName) Then $g_sProfileCurrentName = "<No Profiles>"
@@ -583,6 +585,7 @@ Func FinalInitialization(Const $sAI)
 
 	; InitializeVariables();initialize variables used in extrawindows
 	CheckVersion() ; check latest version on mybot.run site
+	UpdateMultiStats() ; SwitchAcc - Demen_SA_#9001
 	SetDebugLog("Maximum of " & $g_iGlobalActiveBotsAllowed & " bots running at same time configured")
 	SetDebugLog("MyBot.run launch time " & Round($g_iBotLaunchTime) & " ms.")
 
@@ -654,6 +657,14 @@ Func MainLoop()
 EndFunc   ;==>MainLoop
 
 Func runBot() ;Bot that runs everything in order
+
+	; SwitchAcc Demen_SA_#9001
+	InitiateSwitchAcc()
+	If $g_bChkSwitchAcc And $g_bReMatchAcc Then
+		Setlog("Rematching Account [" & $g_iNextAccount + 1 & "] with Profile [" & GUICtrlRead($g_ahCmbProfile[$g_iNextAccount]) & "]")
+		SwitchCoCAcc($g_iNextAccount)
+	EndIf
+
 	Local $iWaitTime
 
 	While 1
@@ -695,6 +706,9 @@ Func runBot() ;Bot that runs everything in order
 			If $g_bRestart = True Then ContinueLoop
 			If _Sleep($DELAYRUNBOT3) Then Return
 			VillageReport()
+			UpdateHeroStatus() ; Demen_HL_#9005
+			UpdateLabStatus() ; Demen_HL_#9005
+			CheckFarmSchedule() ; Demen_FS_#9012
 			If $g_bOutOfGold = True And (Number($g_aiCurrentLoot[$eLootGold]) >= Number($g_iTxtRestartGold)) Then ; check if enough gold to begin searching again
 				$g_bOutOfGold = False ; reset out of gold flag
 				Setlog("Switching back to normal after no gold to search ...", $COLOR_SUCCESS)
@@ -708,7 +722,7 @@ Func runBot() ;Bot that runs everything in order
 			If _Sleep($DELAYRUNBOT5) Then Return
 			checkMainScreen(False)
 			If $g_bRestart = True Then ContinueLoop
-			Local $aRndFuncList = ['Collect', 'CheckTombs', 'ReArm', 'CleanYard']
+			Local $aRndFuncList = ['Collect', 'CheckTombs', 'ReArm', 'CleanYard', 'RequestCC'] ; moving RequestCC earlier - (Other mod's Code ref. Demen_OT_#9009)
 			While 1
 				If $g_bRunState = False Then Return
 				If $g_bRestart = True Then ContinueLoop 2 ; must be level 2 due to loop-in-loop
@@ -727,7 +741,7 @@ Func runBot() ;Bot that runs everything in order
 			If $g_bRunState = False Then Return
 			If $g_bRestart = True Then ContinueLoop
 			If IsSearchAttackEnabled() Then ; if attack is disabled skip reporting, requesting, donating, training, and boosting
-				Local $aRndFuncList = ['ReplayShare', 'NotifyReport', 'DonateCC,Train', 'BoostBarracks', 'BoostSpellFactory', 'BoostKing', 'BoostQueen', 'BoostWarden', 'RequestCC']
+				Local $aRndFuncList = ['ReplayShare', 'NotifyReport', 'DonateCC,Train', 'BoostBarracks', 'BoostSpellFactory', 'BoostKing', 'BoostQueen', 'BoostWarden'] ; moving RequestCC earlier - (Other mod's Code ref. Demen_OT_#9009)
 				While 1
 					If $g_bRunState = False Then Return
 					If $g_bRestart = True Then ContinueLoop 2 ; must be level 2 due to loop-in-loop
@@ -770,6 +784,9 @@ Func runBot() ;Bot that runs everything in order
 				UpgradeWall()
 				If _Sleep($DELAYRUNBOT3) Then Return
 				If $g_bRestart = True Then ContinueLoop
+
+				If $g_bChkSwitchAcc And $g_abDonateOnly[$g_iCurAccount] Then checkSwitchAcc(); SwitchAcc Demen_SA_#9001
+
 				Idle()
 				;$g_bFullArmy1 = $g_bFullArmy
 				If _Sleep($DELAYRUNBOT3) Then Return
@@ -955,7 +972,9 @@ Func _Idle() ;Sequence that runs until Full Army
 		If ($g_iCommandStop = 3 Or $g_iCommandStop = 0) And $g_bTrainEnabled = False Then ExitLoop ; If training is not enabled, run only 1 idle loop
 
 		If $g_iCommandStop = -1 Then ; Check if closing bot/emulator while training and not in halt mode
+			If $g_bChkSwitchAcc Then checkSwitchAcc() ; SwitchAcc Demen_SA_#9001
 			SmartWait4Train()
+
 			If $g_bRestart = True Then ExitLoop ; if smart wait activated, exit to runbot in case user adjusted GUI or left emulator/bot in bad state
 		EndIf
 
@@ -967,6 +986,10 @@ Func AttackMain() ;Main control for attack functions
 	getArmyCapacity(True, True)
 	If IsSearchAttackEnabled() Then
 		If (IsSearchModeActive($DB) And checkCollectors(True, False)) Or IsSearchModeActive($LB) Or IsSearchModeActive($TS) Then
+
+			; SwitchAcc Demen_SA_#9001
+			If $g_bChkSwitchAcc And ($g_aiAttackedCountSwitch[$g_iCurAccount] <= $g_aiAttackedCountAcc[$g_iCurAccount] - 2) Then checkSwitchAcc()
+
 			If $g_bUseCCBalanced = True Then ;launch profilereport() only if option balance D/R it's activated
 				ProfileReport()
 				If _Sleep($DELAYATTACKMAIN1) Then Return
@@ -1003,6 +1026,9 @@ Func AttackMain() ;Main control for attack functions
 			$g_bIsSearchLimit = False
 			$g_bIsClientSyncError = False
 			$g_bQuickAttack = False
+			; SwitchAcc Demen_SA_#9001
+			If $g_bChkSwitchAcc Then checkSwitchAcc()
+			SmartWait4Train()
 		EndIf
 	Else
 		SetLog("Attacking Not Planned, Skipped..", $COLOR_WARNING)
@@ -1129,6 +1155,7 @@ Func _RunFunction($action)
 		Case "BoostWarden"
 			BoostWarden()
 		Case "RequestCC"
+			CheckCC() ; Demen_CC_#9004
 			RequestCC()
 			If _Sleep($DELAYRUNBOT1) = False Then checkMainScreen(False)
 		Case "Laboratory"

@@ -2095,7 +2095,7 @@ Global $g_iBotBackendFindTimeout = 3000
 Global $hStruct_SleepMicro = DllStructCreate("int64 time;")
 Global $pStruct_SleepMicro = DllStructGetPtr($hStruct_SleepMicro)
 Global $DELAYSLEEP = 10
-Global $g_iDebugSetlog = 0
+Global $g_bDebugSetlog = 0
 Global $g_hFrmBotEmbeddedMouse = 0
 Global Const $BS_MULTILINE = 0x2000
 Global Const $_UDF_GlobalIDs_OFFSET = 2
@@ -6369,7 +6369,7 @@ If $pid = 0 Then
 SetLog("Cannot launch My Bot backend process", $COLOR_RED)
 Return 0
 EndIf
-If $g_iDebugSetlog Then
+If $g_bDebugSetlog Then
 SetDebugLog("My Bot backend process launched, PID = " & $pid)
 Else
 SetLog("My Bot backend process launched")
@@ -6451,7 +6451,7 @@ _GDIPlus_Startup()
 $g_iGuiMode = 2
 $g_bGuiRemote = True
 $g_WatchDogLogStatusBar = True
-$g_iDebugSetlog = 1
+$g_bDebugSetlog = 1
 SetupProfileFolder()
 InitAndroidConfig()
 If FileExists($g_sProfileConfigPath) Or FileExists($g_sProfileBuildingPath) Then

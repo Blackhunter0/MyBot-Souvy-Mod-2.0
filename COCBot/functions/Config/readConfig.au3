@@ -232,7 +232,7 @@ Func ReadRegularConfig()
 	ReadConfig_600_35()
 	; <><><> Attack Plan / Train Army / Troops/Spells <><><>
 	; Quick train
-	ReadConfig_600_52_1()
+;~ 	ReadConfig_600_52_1()	; QuickTrainCombo - Demen_QT_#9006
 	; troop/spell levels and counts
 	ReadConfig_600_52_2()
 	; <><><> Attack Plan / Train Army / Train Order <><><>
@@ -256,6 +256,10 @@ Func ReadRegularConfig()
 
 	; <><><><> Bot / Stats <><><><>
 	; <<< nothing here >>>
+
+	; Demen Mod - Demen_GE_#9000
+	ReadConfig_Mod()
+
 EndFunc   ;==>ReadRegularConfig
 
 Func ReadConfig_Debug()
@@ -1143,6 +1147,7 @@ Func ReadConfig_600_35()
 	$g_bForceClanCastleDetection = (IniRead($g_sProfileConfigPath, "other", "ChkFixClanCastle", "0") = "1")
 EndFunc   ;==>ReadConfig_600_35
 
+#CS	; Included in SmartTrain - Demen_QT_#9006
 Func ReadConfig_600_52_1()
 	; <><><><> Attack Plan / Train Army / Troops/Spells <><><><>
 	$g_bQuickTrainEnable = (IniRead($g_sProfileConfigPath, "other", "ChkUseQTrain", "0") = "1")
@@ -1150,7 +1155,7 @@ Func ReadConfig_600_52_1()
 	$g_bQuickTrainArmy[1] = (IniRead($g_sProfileConfigPath, "troop", "QuickTrainArmy2", "0") = "1")
 	$g_bQuickTrainArmy[2] = (IniRead($g_sProfileConfigPath, "troop", "QuickTrainArmy3", "0") = "1")
 EndFunc   ;==>ReadConfig_600_52_1
-
+#ce
 Func ReadConfig_600_52_2()
 	For $T = 0 To $eTroopCount - 1
 		Local $tempTroopCount, $tempTroopLevel

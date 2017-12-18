@@ -87,7 +87,7 @@ Global $hStruct_SleepMicro = DllStructCreate("int64 time;")
 Global $pStruct_SleepMicro = DllStructGetPtr($hStruct_SleepMicro)
 Global $DELAYSLEEP = 10
 Global $DELAYWINDOWSARRANGE1 = 100
-Global $g_iDebugSetlog = 0
+Global $g_bDebugSetlog = 0
 
 Global $g_hFrmBotEmbeddedMouse = 0
 
@@ -1211,7 +1211,7 @@ Func LaunchBotBackend($bNoGUI = True)
 				SetLog("Cannot launch My Bot backend process", $COLOR_RED)
 				Return 0
 			EndIf
-			If $g_iDebugSetlog Then
+			If $g_bDebugSetlog Then
 				SetDebugLog("My Bot backend process launched, PID = " & $pid)
 			Else
 				SetLog("My Bot backend process launched")
@@ -1321,7 +1321,7 @@ _GDIPlus_Startup() ; Start GDI+ Engine (incl. a new thread)
 $g_iGuiMode = 2
 $g_bGuiRemote = True ; GUI Remote flag
 $g_WatchDogLogStatusBar = True
-$g_iDebugSetlog = 1
+$g_bDebugSetlog = 1
 ;$g_iDebugWindowMessages = 1
 
 #cs
